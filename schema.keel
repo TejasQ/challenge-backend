@@ -5,13 +5,23 @@ model Challenge {
         startDate Date
         endDate Date?
         penalty Number
+        createdBy Identity
     }
 
     actions {
-        create createChallenge() with (name, startDate, penalty)
+        create createChallenge() with (name, startDate, penalty) {
+            @set(challenge.createdBy = ctx.identity)
+        }
         list listChallenges()
         get getChallengeById(id)
         update updateChallenge(id) with (name, startDate, penalty)
-        delete deleteChallenge(id)
+        delete deleteChallenge(id) {
+            @permission(expression: ctx.identity == challenge.createdBy)
+        }
     }
+
+    @permission(
+        actions: [create, list, get, update, delete],
+        expression: ctx.isAuthenticated
+    )
 }
